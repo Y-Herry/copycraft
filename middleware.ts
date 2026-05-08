@@ -9,11 +9,15 @@ export default auth((req) => {
     req.nextUrl.pathname.startsWith("/register");
 
   if (isDashboard && !isLoggedIn) {
-    return NextResponse.redirect(new URL("/login", req.url));
+    const loginUrl = req.nextUrl.clone();
+    loginUrl.pathname = "/login";
+    return NextResponse.redirect(loginUrl);
   }
 
   if (isAuthPage && isLoggedIn) {
-    return NextResponse.redirect(new URL("/generate", req.url));
+    const generateUrl = req.nextUrl.clone();
+    generateUrl.pathname = "/generate";
+    return NextResponse.redirect(generateUrl);
   }
 
   return NextResponse.next();

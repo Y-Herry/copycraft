@@ -36,7 +36,20 @@ export async function POST(req: NextRequest) {
     where: { userId },
   });
 
-  const planKey = (subscription?.plan || "FREE") as PlanKey;
+  // 检查订阅是否过期
+  let planKey = (subscription?.plan || "FREE") as PlanKey;
+  if (
+    planKey !== "FREE" &&
+    subscription?.expiresAt &&
+    new Date(subscription.expiresAt) < now
+  ) {
+    await prisma.subscription.update({
+      where: { userId },
+      data: { plan: "FREE", expiresAt: null },
+    });
+    planKey = "FREE";
+  }
+
   const plan = PLANS[planKey];
 
   if (plan.monthlyGenerations !== -1 && (usage?.count || 0) >= plan.monthlyGenerations) {

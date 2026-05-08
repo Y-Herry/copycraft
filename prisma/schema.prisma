@@ -22,6 +22,7 @@ model User {
   accounts          Account[]
   sessions          Session[]
   subscription      Subscription?
+  payments          Payment[]
   usageRecords      UsageRecord[]
   generatedContents GeneratedContent[]
 }
@@ -65,18 +66,13 @@ model VerificationToken {
 // ─── Business Models ───
 
 model Subscription {
-  id                   String   @id @default(cuid())
-  userId               String   @unique
-  plan                 Plan     @default(FREE)
-  status               SubscriptionStatus @default(ACTIVE)
-  stripeCustomerId     String?  @unique
-  stripeSubscriptionId String?  @unique
-  stripePriceId        String?
-  currentPeriodStart   DateTime?
-  currentPeriodEnd     DateTime?
-  cancelAtPeriodEnd    Boolean  @default(false)
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  plan      Plan     @default(FREE)
+  status    SubscriptionStatus @default(ACTIVE)
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -92,6 +88,43 @@ enum SubscriptionStatus {
   PAST_DUE
   CANCELED
   TRIALING
+}
+
+model Payment {
+  id           String        @id @default(cuid())
+  userId       String
+  orderNo      String        @unique
+  tradeNo      String?
+  method       PaymentMethod
+  plan         Plan
+  billingCycle BillingCycle
+  amount       Int
+  status       PaymentStatus @default(PENDING)
+  paidAt       DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([orderNo])
+}
+
+enum PaymentMethod {
+  ALIPAY
+  WECHAT
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
 }
 
 model UsageRecord {

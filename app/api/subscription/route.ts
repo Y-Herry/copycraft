@@ -20,7 +20,20 @@ export async function GET() {
     }),
   ]);
 
-  const planKey = (subscription?.plan || "FREE") as PlanKey;
+  // 检查订阅是否过期，过期则降级为免费版
+  let planKey = (subscription?.plan || "FREE") as PlanKey;
+  if (
+    planKey !== "FREE" &&
+    subscription?.expiresAt &&
+    new Date(subscription.expiresAt) < now
+  ) {
+    await prisma.subscription.update({
+      where: { userId },
+      data: { plan: "FREE", expiresAt: null },
+    });
+    planKey = "FREE";
+  }
+
   const plan = PLANS[planKey];
 
   return NextResponse.json({
@@ -33,5 +46,6 @@ export async function GET() {
     limit: plan.monthlyGenerations,
     priceMonthly: plan.priceMonthly,
     priceYearly: plan.priceYearly,
+    expiresAt: subscription?.expiresAt?.toISOString() || null,
   });
 }

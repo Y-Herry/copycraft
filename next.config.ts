@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  serverExternalPackages: ["wechatpay-node-v3", "alipay-sdk"],
 };
 
 export default nextConfig;
