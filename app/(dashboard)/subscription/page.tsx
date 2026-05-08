@@ -200,7 +200,7 @@ export default function SubscriptionPage() {
             return (
               <Card
                 key={key}
-                className={`relative ${isCurrent ? "border-primary shadow-lg" : ""}`}
+                className={`relative overflow-visible ${isCurrent ? "border-primary shadow-lg" : ""}`}
               >
                 {isCurrent && (
                   <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">
