@@ -29,7 +29,7 @@ export default function PricingPage() {
               return (
                 <Card
                   key={key}
-                  className={`relative ${isPro ? "border-primary shadow-lg scale-105" : ""}`}
+                  className={`relative overflow-visible ${isPro ? "border-primary shadow-lg scale-105" : ""}`}
                 >
                   {isPro && (
                     <Badge className="absolute -top-3 left-1/2 -translate-x/2">
