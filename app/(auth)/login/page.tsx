@@ -28,9 +28,12 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      // Step 1: Get CSRF token
       const csrfRes = await fetch("/api/auth/csrf");
       const { csrfToken } = await csrfRes.json();
+      console.log("[login] csrfToken:", csrfToken ? "exists" : "missing");
 
+      // Step 2: POST credentials directly
       const res = await fetch("/api/auth/callback/credentials", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -38,20 +41,37 @@ export default function LoginPage() {
           email,
           password,
           csrfToken,
-          callbackUrl: "https://copycraft-mu.vercel.app/generate",
+          callbackUrl: "/generate",
+          "authjs.callback-url": "https://copycraft-mu.vercel.app/login",
+          "authjs.csrf-token": csrfToken,
         }),
-        redirect: "follow",
+        redirect: "manual",
       });
 
-      console.log("[login] final URL:", res.url);
-      console.log("[login] status:", res.status);
-
-      if (res.url.includes("/generate")) {
-        window.location.href = "/generate";
-      } else {
-        setError("邮箱或密码错误");
+      console.log("[login] response status:", res.status);
+      console.log("[login] response headers:");
+      for (const [key, value] of res.headers.entries()) {
+        if (key.toLowerCase().includes("cookie") || key.toLowerCase().includes("location")) {
+          console.log(`  ${key}: ${value}`);
+        }
       }
-    } catch {
+
+      // Step 3: Check Set-Cookie
+      const setCookies = res.headers.getSetCookie?.() ?? [];
+      console.log("[login] Set-Cookie headers:", setCookies.length > 0 ? setCookies : "NONE");
+
+      const location = res.headers.get("location");
+      console.log("[login] redirect location:", location);
+
+      if (res.status >= 300 && res.status < 400 && location) {
+        window.location.href = location;
+      } else {
+        // Try parsing response
+        const text = await res.text();
+        console.log("[login] response body (first 500 chars):", text.substring(0, 500));
+      }
+    } catch (err) {
+      console.error("[login] exception:", err);
       setError("登录失败，请稍后重试");
     } finally {
       setLoading(false);
