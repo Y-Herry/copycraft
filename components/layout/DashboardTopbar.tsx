@@ -23,7 +23,7 @@ export function DashboardTopbar({ user }: { user: User }) {
     : "U";
 
   const handleLogout = async () => {
-    document.cookie = "session=; path=/; max-age=0";
+    await fetch("/api/logout", { method: "POST" });
     router.push("/login");
   };
 
