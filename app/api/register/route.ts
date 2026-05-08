@@ -45,7 +45,8 @@ export async function POST(req: NextRequest) {
       { message: "注册成功", userId: user.id },
       { status: 201 }
     );
-  } catch {
+  } catch (e) {
+    console.error("[register]", e);
     return NextResponse.json(
       { error: "注册失败，请稍后重试" },
       { status: 500 }
