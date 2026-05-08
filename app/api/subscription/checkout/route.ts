@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PLANS, type PlanKey } from "@/lib/constants";
 import { generateOrderNo, createAlipayOrder, createWechatOrder } from "@/lib/payment";
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const session = await getSession();
+  if (!session?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "该套餐无需付费" }, { status: 400 });
   }
 
-  const userId = session.user.id;
+  const userId = session.id;
   const orderNo = generateOrderNo();
   const baseUrl = process.env.AUTH_URL || "http://localhost:3000";
 

@@ -1,13 +1,12 @@
-"use client";
-
-import { useSession } from "next-auth/react";
+import { getSession } from "@/lib/auth";
+import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export default function SettingsPage() {
-  const { data: session } = useSession();
+export default async function SettingsPage() {
+  const session = await getSession();
+  if (!session) redirect("/login");
 
   return (
     <div className="p-6">
@@ -23,11 +22,11 @@ export default function SettingsPage() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label>姓名</Label>
-            <Input defaultValue={session?.user?.name || ""} disabled />
+            <Input defaultValue={session.name || ""} disabled />
           </div>
           <div className="space-y-2">
             <Label>邮箱</Label>
-            <Input defaultValue={session?.user?.email || ""} disabled />
+            <Input defaultValue={session.email || ""} disabled />
           </div>
           <p className="text-xs text-muted-foreground">
             如需修改信息，请联系客服

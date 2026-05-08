@@ -1,19 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const session = await getSession();
+  if (!session?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const { id } = await params;
   const item = await prisma.generatedContent.findFirst({
-    where: { id, userId: session.user.id },
+    where: { id, userId: session.id },
   });
 
   if (!item) {
@@ -27,14 +27,14 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const session = await getSession();
+  if (!session?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const { id } = await params;
   await prisma.generatedContent.deleteMany({
-    where: { id, userId: session.user.id },
+    where: { id, userId: session.id },
   });
 
   return NextResponse.json({ message: "已删除" });
@@ -44,8 +44,8 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const session = await getSession();
+  if (!session?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -53,7 +53,7 @@ export async function PATCH(
   const body = await req.json();
 
   const item = await prisma.generatedContent.updateMany({
-    where: { id, userId: session.user.id },
+    where: { id, userId: session.id },
     data: { isFavorite: body.isFavorite },
   });
 

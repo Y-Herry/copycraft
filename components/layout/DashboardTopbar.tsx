@@ -1,6 +1,5 @@
 "use client";
 
-import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import {
   DropdownMenu,
@@ -11,13 +10,22 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LogOut, User } from "lucide-react";
 
-export function DashboardTopbar() {
-  const { data: session } = useSession();
+interface User {
+  name?: string | null;
+  email?: string | null;
+}
+
+export function DashboardTopbar({ user }: { user: User }) {
   const router = useRouter();
 
-  const initials = session?.user?.name
-    ? session.user.name.slice(0, 2).toUpperCase()
+  const initials = user?.name
+    ? user.name.slice(0, 2).toUpperCase()
     : "U";
+
+  const handleLogout = async () => {
+    document.cookie = "session=; path=/; max-age=0";
+    router.push("/login");
+  };
 
   return (
     <header className="flex h-16 shrink-0 items-center justify-between border-b px-6">
@@ -26,7 +34,7 @@ export function DashboardTopbar() {
       </div>
       <div className="ml-auto flex items-center gap-4">
         <span className="text-sm text-muted-foreground hidden sm:inline">
-          {session?.user?.email}
+          {user?.email}
         </span>
         <DropdownMenu>
           <DropdownMenuTrigger className="cursor-pointer">
@@ -39,7 +47,7 @@ export function DashboardTopbar() {
               <User className="mr-2 h-4 w-4" />
               账号设置
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/login" })}>
+            <DropdownMenuItem onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
               退出登录
             </DropdownMenuItem>

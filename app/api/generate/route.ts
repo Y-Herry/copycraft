@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateStream } from "@/lib/ai/provider";
 import { getPrompt } from "@/lib/ai/prompts";
@@ -7,8 +7,8 @@ import { generateSchema } from "@/lib/validations";
 import { PLANS, type PlanKey } from "@/lib/constants";
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const session = await getSession();
+  if (!session?.id) {
     return new Response("Unauthorized", { status: 401 });
   }
 
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
 
   const { copyType, topic, keywords, tone, additionalContext, model } =
     parsed.data;
-  const userId = session.user.id;
+  const userId = session.id;
 
   // Check usage
   const now = new Date();

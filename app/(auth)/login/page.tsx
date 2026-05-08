@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,7 @@ import {
 import { Sparkles } from "lucide-react";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -28,50 +29,20 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // Step 1: Get CSRF token
-      const csrfRes = await fetch("/api/auth/csrf");
-      const { csrfToken } = await csrfRes.json();
-      console.log("[login] csrfToken:", csrfToken ? "exists" : "missing");
-
-      // Step 2: POST credentials directly
-      const res = await fetch("/api/auth/callback/credentials", {
+      const res = await fetch("/api/login", {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          email,
-          password,
-          csrfToken,
-          callbackUrl: "/generate",
-          "authjs.callback-url": "https://copycraft-mu.vercel.app/login",
-          "authjs.csrf-token": csrfToken,
-        }),
-        redirect: "manual",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
 
-      console.log("[login] response status:", res.status);
-      console.log("[login] response headers:");
-      for (const [key, value] of res.headers.entries()) {
-        if (key.toLowerCase().includes("cookie") || key.toLowerCase().includes("location")) {
-          console.log(`  ${key}: ${value}`);
-        }
-      }
+      const data = await res.json();
 
-      // Step 3: Check Set-Cookie
-      const setCookies = res.headers.getSetCookie?.() ?? [];
-      console.log("[login] Set-Cookie headers:", setCookies.length > 0 ? setCookies : "NONE");
-
-      const location = res.headers.get("location");
-      console.log("[login] redirect location:", location);
-
-      if (res.status >= 300 && res.status < 400 && location) {
-        window.location.href = location;
+      if (!res.ok) {
+        setError(data.error || "登录失败");
       } else {
-        // Try parsing response
-        const text = await res.text();
-        console.log("[login] response body (first 500 chars):", text.substring(0, 500));
+        router.push("/generate");
       }
-    } catch (err) {
-      console.error("[login] exception:", err);
+    } catch {
       setError("登录失败，请稍后重试");
     } finally {
       setLoading(false);
