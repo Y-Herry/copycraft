@@ -14,6 +14,13 @@ export async function middleware(req: NextRequest) {
     req.nextUrl.pathname.startsWith("/login") ||
     req.nextUrl.pathname.startsWith("/register");
 
+  console.log("[middleware]", req.nextUrl.pathname, {
+    isLoggedIn,
+    hasToken: !!token,
+    cookies: req.cookies.getAll().map(c => c.name),
+    secretExists: !!process.env.NEXTAUTH_SECRET,
+  });
+
   if (isDashboard && !isLoggedIn) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
