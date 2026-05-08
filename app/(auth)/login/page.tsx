@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,6 @@ import {
 import { Sparkles } from "lucide-react";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -30,24 +29,12 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      console.log("[login] attempting signIn...");
-      const result = await signIn("credentials", {
+      await signIn("credentials", {
         email,
         password,
-        redirect: false,
+        redirectTo: "/generate",
       });
-      console.log("[login] signIn result:", JSON.stringify(result));
-
-      if (result?.error) {
-        console.log("[login] signIn error:", result.error);
-        setError("邮箱或密码错误");
-      } else {
-        console.log("[login] signIn success, redirecting to /generate");
-        router.push("/generate");
-        // router.refresh();
-      }
-    } catch (err) {
-      console.error("[login] signIn exception:", err);
+    } catch {
       setError("登录失败，请稍后重试");
     } finally {
       setLoading(false);
