@@ -44,7 +44,7 @@ export default function LoginPage() {
       } else {
         console.log("[login] signIn success, redirecting to /generate");
         router.push("/generate");
-        router.refresh();
+        // router.refresh();
       }
     } catch (err) {
       console.error("[login] signIn exception:", err);
